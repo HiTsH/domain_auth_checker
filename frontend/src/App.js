@@ -45,10 +45,15 @@ const useStyles = makeStyles((theme) => ({
   chip: { marginRight: theme.spacing(1), marginBottom: theme.spacing(1) },
 }));
 
-function EmailRelayResults({ emailRelay }) {
+function EmailRelayResults({ emailRelay, classes }) {
   if (!emailRelay) return null;
-  if (emailRelay.error)
-    return <p>Error checking email relay: {emailRelay.error}</p>;
+  if (emailRelay.error) {
+    return (
+      <Paper className={classes.resultCard}>
+        <Typography>Error checking email relay: {emailRelay.error}</Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Paper className={useStyles().resultCard}>
