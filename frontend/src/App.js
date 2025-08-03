@@ -11,6 +11,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Box,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -27,25 +28,48 @@ const useStyles = makeStyles((theme) => ({
   header: {
     marginBottom: theme.spacing(4),
     color: "#2c3e50",
+    fontWeight: 500,
   },
   inputContainer: {
     marginBottom: theme.spacing(4),
     padding: theme.spacing(3),
     backgroundColor: "#ffffff",
-    borderRadius: "8px",
+    borderRadius: 8,
     boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
   },
   resultCard: {
     padding: theme.spacing(3),
-    marginBottom: theme.spacing(2),
-    borderRadius: "8px",
+    marginBottom: theme.spacing(3),
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
   },
-  success: { color: "#4caf50" },
-  error: { color: "#f44336" },
-  chip: { marginRight: theme.spacing(1), marginBottom: theme.spacing(1) },
+  success: {
+    color: "#4caf50",
+    marginRight: theme.spacing(1),
+  },
+  error: {
+    color: "#f44336",
+    marginRight: theme.spacing(1),
+  },
+  chip: {
+    marginRight: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  statusText: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: theme.spacing(2),
+  },
+  sectionTitle: {
+    marginBottom: theme.spacing(2),
+    fontWeight: 500,
+  },
+  accordionDetails: {
+    flexDirection: "column",
+  },
 }));
 
-// Fixed EmailRelayResults component - now a pure function component
 const EmailRelayResults = ({ emailRelay, classes }) => {
   if (!emailRelay) return null;
 
@@ -55,81 +79,107 @@ const EmailRelayResults = ({ emailRelay, classes }) => {
         <Typography>Error checking email relay: {emailRelay.error}</Typography>
       ) : (
         <>
-          <Typography variant="h6">Email Relay Configuration</Typography>
-          <Typography>
-            Overall Status:
-            <span
-              style={{
-                color: emailRelay.overall_configured ? "#4caf50" : "#f44336",
-              }}
-            >
-              {emailRelay.overall_configured
-                ? " Configured"
-                : " Not Configured"}
-            </span>
+          <Typography variant="h6" className={classes.sectionTitle}>
+            Email Relay Configuration
           </Typography>
+          <Box className={classes.statusText}>
+            <Typography variant="body1">
+              <strong>Overall Status:</strong>
+              <span
+                style={{
+                  color: emailRelay.overall_configured ? "#4caf50" : "#f44336",
+                  marginLeft: 8,
+                }}
+              >
+                {emailRelay.overall_configured
+                  ? "Configured"
+                  : "Not Configured"}
+              </span>
+            </Typography>
+          </Box>
 
-          <Typography variant="subtitle1">Base Domain:</Typography>
-          <Typography>
-            Status:
-            <span
-              style={{
-                color: emailRelay.base_domain.configured
-                  ? "#4caf50"
-                  : "#f44336",
-              }}
-            >
-              {emailRelay.base_domain.configured
-                ? " Configured"
-                : " Not Configured"}
-            </span>
+          <Typography variant="subtitle1" className={classes.sectionTitle}>
+            Base Domain:
           </Typography>
+          <Box className={classes.statusText}>
+            <Typography variant="body1">
+              <strong>Status:</strong>
+              <span
+                style={{
+                  color: emailRelay.base_domain.configured
+                    ? "#4caf50"
+                    : "#f44336",
+                  marginLeft: 8,
+                }}
+              >
+                {emailRelay.base_domain.configured
+                  ? "Configured"
+                  : "Not Configured"}
+              </span>
+            </Typography>
+          </Box>
+
           {emailRelay.base_domain.mx_exists && (
-            <Typography>MX Records exist</Typography>
+            <Typography variant="body2">✓ MX Records exist</Typography>
           )}
           {emailRelay.base_domain.a_exists && (
-            <Typography>A Records exist</Typography>
+            <Typography variant="body2">✓ A Records exist</Typography>
           )}
 
-          <Typography variant="subtitle1">Subdomains:</Typography>
+          <Typography variant="subtitle1" className={classes.sectionTitle}>
+            Subdomains:
+          </Typography>
           {Object.entries(emailRelay.subdomains).map(([subdomain, data]) => (
             <Accordion key={subdomain}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>
                   {subdomain}:
                   <span
-                    style={{ color: data.configured ? "#4caf50" : "#f44336" }}
+                    style={{
+                      color: data.configured ? "#4caf50" : "#f44336",
+                      marginLeft: 8,
+                    }}
                   >
-                    {data.configured ? " Configured" : " Not Configured"}
+                    {data.configured ? "Configured" : "Not Configured"}
                   </span>
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails>
-                <div>
-                  {data.mx_exists && (
-                    <>
-                      <Typography>MX Records:</Typography>
-                      <ul>
-                        {data.mx_records.map((record, i) => (
-                          <li key={i}>{record}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {data.a_exists && (
-                    <>
-                      <Typography>A Records:</Typography>
-                      <ul>
-                        {data.a_records.map((record, i) => (
-                          <li key={i}>{record}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {!data.mx_exists && !data.a_exists && (
-                    <Typography>No email relay records found</Typography>
-                  )}
-                </div>
+              <AccordionDetails className={classes.accordionDetails}>
+                {data.mx_exists && (
+                  <>
+                    <Typography variant="body2">MX Records:</Typography>
+                    <Box>
+                      {data.mx_records.map((record, i) => (
+                        <Chip
+                          key={i}
+                          label={record}
+                          variant="outlined"
+                          className={classes.chip}
+                        />
+                      ))}
+                    </Box>
+                  </>
+                )}
+                {data.a_exists && (
+                  <>
+                    <Typography variant="body2">A Records:</Typography>
+                    <Box>
+                      {data.a_records.map((record, i) => (
+                        <Chip
+                          key={i}
+                          label={record}
+                          variant="outlined"
+                          className={classes.chip}
+                        />
+                      ))}
+                    </Box>
+                  </>
+                )}
+                {!data.mx_exists && !data.a_exists && (
+                  <Typography variant="body2">
+                    No email relay records found
+                  </Typography>
+                )}
               </AccordionDetails>
             </Accordion>
           ))}
@@ -206,119 +256,136 @@ export default function App() {
 
         {results && (
           <>
-            {/* Main Domain Results Card */}
             <Paper className={classes.resultCard}>
-              <Typography variant="h5">Results for {results.domain}</Typography>
+              <Typography variant="h5" className={classes.sectionTitle}>
+                Results for {results.domain}
+              </Typography>
 
               <Grid container spacing={3}>
-                {/* SPF Section */}
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Box className={classes.statusText}>
                     {results.spf.exists ? (
                       <CheckCircleIcon className={classes.success} />
                     ) : (
                       <ErrorIcon className={classes.error} />
-                    )}{" "}
-                    SPF
-                  </Typography>
-                  {results.spf.records?.map((r, i) => (
-                    <Chip
-                      key={i}
-                      label={r}
-                      variant="outlined"
-                      className={classes.chip}
-                    />
-                  ))}
+                    )}
+                    <Typography variant="body1">
+                      <strong>SPF</strong>
+                    </Typography>
+                  </Box>
+                  <Box>
+                    {results.spf.records?.map((r, i) => (
+                      <Chip
+                        key={i}
+                        label={r}
+                        variant="outlined"
+                        className={classes.chip}
+                      />
+                    ))}
+                  </Box>
                 </Grid>
 
-                {/* DKIM Section */}
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Box className={classes.statusText}>
                     {Object.keys(results.dkim).length > 0 ? (
                       <CheckCircleIcon className={classes.success} />
                     ) : (
                       <ErrorIcon className={classes.error} />
-                    )}{" "}
-                    DKIM
-                  </Typography>
-                  {Object.entries(results.dkim).map(([selector, data]) => (
-                    <Accordion key={selector}>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography>{selector}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <div>
+                    )}
+                    <Typography variant="body1">
+                      <strong>DKIM</strong>
+                    </Typography>
+                  </Box>
+                  <Box>
+                    {Object.entries(results.dkim).map(([selector, data]) => (
+                      <Accordion key={selector}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Typography>{selector}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails className={classes.accordionDetails}>
                           <Typography variant="body2">{data.domain}</Typography>
-                          {data.records.map((record, i) => (
-                            <Chip
-                              key={i}
-                              label={record}
-                              variant="outlined"
-                              className={classes.chip}
-                            />
-                          ))}
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
+                          <Box>
+                            {data.records.map((record, i) => (
+                              <Chip
+                                key={i}
+                                label={record}
+                                variant="outlined"
+                                className={classes.chip}
+                              />
+                            ))}
+                          </Box>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </Box>
                 </Grid>
 
-                {/* DMARC Section */}
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Box className={classes.statusText}>
                     {results.dmarc.exists ? (
                       <CheckCircleIcon className={classes.success} />
                     ) : (
                       <ErrorIcon className={classes.error} />
-                    )}{" "}
-                    DMARC
-                  </Typography>
-                  {results.dmarc.records?.map((r, i) => (
-                    <Chip
-                      key={i}
-                      label={r}
-                      variant="outlined"
-                      className={classes.chip}
-                    />
-                  ))}
+                    )}
+                    <Typography variant="body1">
+                      <strong>DMARC</strong>
+                    </Typography>
+                  </Box>
+                  <Box>
+                    {results.dmarc.records?.map((r, i) => (
+                      <Chip
+                        key={i}
+                        label={r}
+                        variant="outlined"
+                        className={classes.chip}
+                      />
+                    ))}
+                  </Box>
                 </Grid>
 
-                {/* MX Records Section */}
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Box className={classes.statusText}>
                     {results.mx.exists ? (
                       <CheckCircleIcon className={classes.success} />
                     ) : (
                       <ErrorIcon className={classes.error} />
-                    )}{" "}
-                    MX Records
-                  </Typography>
-                  {results.mx.records?.map((r, i) => (
-                    <Chip
-                      key={i}
-                      label={r}
-                      variant="outlined"
-                      className={classes.chip}
-                    />
-                  ))}
+                    )}
+                    <Typography variant="body1">
+                      <strong>MX Records</strong>
+                    </Typography>
+                  </Box>
+                  <Box>
+                    {results.mx.records?.map((r, i) => (
+                      <Chip
+                        key={i}
+                        label={r}
+                        variant="outlined"
+                        className={classes.chip}
+                      />
+                    ))}
+                  </Box>
                 </Grid>
               </Grid>
             </Paper>
 
-            {/* SMTP Test Results (if available) */}
             {results.smtp && (
               <Paper className={classes.resultCard}>
-                <Typography variant="h6">SMTP Connectivity</Typography>
+                <Typography variant="h6" className={classes.sectionTitle}>
+                  SMTP Connectivity
+                </Typography>
                 {results.smtp.map((test, index) => (
-                  <div key={index}>
-                    <Typography>
+                  <Box key={index} mb={2}>
+                    <Box className={classes.statusText}>
                       {test.success ? (
                         <CheckCircleIcon className={classes.success} />
                       ) : (
                         <ErrorIcon className={classes.error} />
                       )}
-                      {test.host} {test.port && `(Port ${test.port})`}
-                    </Typography>
+                      <Typography>
+                        <strong>{test.host}</strong>{" "}
+                        {test.port && `(Port ${test.port})`}
+                      </Typography>
+                    </Box>
                     {test.success ? (
                       <Typography variant="body2" color="textSecondary">
                         Response: {test.response}
@@ -328,12 +395,11 @@ export default function App() {
                         Error: {test.error}
                       </Typography>
                     )}
-                  </div>
+                  </Box>
                 ))}
               </Paper>
             )}
 
-            {/* Email Relay Results */}
             <EmailRelayResults
               emailRelay={results.email_relay}
               classes={classes}
