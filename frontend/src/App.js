@@ -45,91 +45,99 @@ const useStyles = makeStyles((theme) => ({
   chip: { marginRight: theme.spacing(1), marginBottom: theme.spacing(1) },
 }));
 
-function EmailRelayResults({ emailRelay, classes }) {
+// Fixed EmailRelayResults component - now a pure function component
+const EmailRelayResults = ({ emailRelay, classes }) => {
   if (!emailRelay) return null;
-  if (emailRelay.error) {
-    return (
-      <Paper className={classes.resultCard}>
-        <Typography>Error checking email relay: {emailRelay.error}</Typography>
-      </Paper>
-    );
-  }
 
   return (
-    <Paper className={useStyles().resultCard}>
-      <Typography variant="h6">Email Relay Configuration</Typography>
-      <Typography>
-        Overall Status:
-        <span
-          style={{
-            color: emailRelay.overall_configured ? "#4caf50" : "#f44336",
-          }}
-        >
-          {emailRelay.overall_configured ? "Configured" : "Not Configured"}
-        </span>
-      </Typography>
+    <Paper className={classes.resultCard}>
+      {emailRelay.error ? (
+        <Typography>Error checking email relay: {emailRelay.error}</Typography>
+      ) : (
+        <>
+          <Typography variant="h6">Email Relay Configuration</Typography>
+          <Typography>
+            Overall Status:
+            <span
+              style={{
+                color: emailRelay.overall_configured ? "#4caf50" : "#f44336",
+              }}
+            >
+              {emailRelay.overall_configured
+                ? " Configured"
+                : " Not Configured"}
+            </span>
+          </Typography>
 
-      <Typography variant="subtitle1">Base Domain:</Typography>
-      <Typography>
-        Status:
-        <span
-          style={{
-            color: emailRelay.base_domain.configured ? "#4caf50" : "#f44336",
-          }}
-        >
-          {emailRelay.base_domain.configured ? "Configured" : "Not Configured"}
-        </span>
-      </Typography>
-      {emailRelay.base_domain.mx_exists && (
-        <Typography>MX Records exist</Typography>
-      )}
-      {emailRelay.base_domain.a_exists && (
-        <Typography>A Records exist</Typography>
-      )}
+          <Typography variant="subtitle1">Base Domain:</Typography>
+          <Typography>
+            Status:
+            <span
+              style={{
+                color: emailRelay.base_domain.configured
+                  ? "#4caf50"
+                  : "#f44336",
+              }}
+            >
+              {emailRelay.base_domain.configured
+                ? " Configured"
+                : " Not Configured"}
+            </span>
+          </Typography>
+          {emailRelay.base_domain.mx_exists && (
+            <Typography>MX Records exist</Typography>
+          )}
+          {emailRelay.base_domain.a_exists && (
+            <Typography>A Records exist</Typography>
+          )}
 
-      <Typography variant="subtitle1">Subdomains:</Typography>
-      {Object.entries(emailRelay.subdomains).map(([subdomain, data]) => (
-        <Accordion key={subdomain}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>
-              {subdomain}:
-              <span style={{ color: data.configured ? "#4caf50" : "#f44336" }}>
-                {data.configured ? "Configured" : "Not Configured"}
-              </span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div>
-              {data.mx_exists && (
-                <>
-                  <Typography>MX Records:</Typography>
-                  <ul>
-                    {data.mx_records.map((record, i) => (
-                      <li key={i}>{record}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              {data.a_exists && (
-                <>
-                  <Typography>A Records:</Typography>
-                  <ul>
-                    {data.a_records.map((record, i) => (
-                      <li key={i}>{record}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              {!data.mx_exists && !data.a_exists && (
-                <Typography>No email relay records found</Typography>
-              )}
-            </div>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+          <Typography variant="subtitle1">Subdomains:</Typography>
+          {Object.entries(emailRelay.subdomains).map(([subdomain, data]) => (
+            <Accordion key={subdomain}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>
+                  {subdomain}:
+                  <span
+                    style={{ color: data.configured ? "#4caf50" : "#f44336" }}
+                  >
+                    {data.configured ? " Configured" : " Not Configured"}
+                  </span>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <div>
+                  {data.mx_exists && (
+                    <>
+                      <Typography>MX Records:</Typography>
+                      <ul>
+                        {data.mx_records.map((record, i) => (
+                          <li key={i}>{record}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {data.a_exists && (
+                    <>
+                      <Typography>A Records:</Typography>
+                      <ul>
+                        {data.a_records.map((record, i) => (
+                          <li key={i}>{record}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {!data.mx_exists && !data.a_exists && (
+                    <Typography>No email relay records found</Typography>
+                  )}
+                </div>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </>
+      )}
     </Paper>
   );
-}
+};
 
 export default function App() {
   const classes = useStyles();
@@ -326,7 +334,10 @@ export default function App() {
             )}
 
             {/* Email Relay Results */}
-            <EmailRelayResults emailRelay={results.email_relay} />
+            <EmailRelayResults
+              emailRelay={results.email_relay}
+              classes={classes}
+            />
           </>
         )}
       </Container>
