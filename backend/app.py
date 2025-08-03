@@ -73,6 +73,71 @@ async def test_smtp(domain, mx_records):
             })
     return results
 
+def check_email_relay(domain):
+    try:
+        email_subdomains = ['mail', 'smtp', 'email', 'mx', 'relay']
+        results = {}
+        
+        for sub in email_subdomains:
+            subdomain = f"{sub}.{domain}"
+            mx_records = get_dns_records(subdomain, 'MX')
+            a_records = get_dns_records(subdomain, 'A')
+            
+            results[subdomain] = {
+                'mx_exists': len(mx_records) > 0,
+                'mx_records': mx_records,
+                'a_exists': len(a_records) > 0,
+                'a_records': a_records,
+                'configured': len(mx_records) > 0 or len(a_records) > 0
+            }
+        
+        base_domain_check = {
+            'mx_exists': len(get_dns_records(domain, 'MX')) > 0,
+            'a_exists': len(get_dns_records(domain, 'A')) > 0,
+            'configured': len(get_dns_records(domain, 'MX')) > 0 or len(get_dns_records(domain, 'A')) > 0
+        }
+        
+        return {
+            'subdomains': results,
+            'base_domain': base_domain_check,
+            'overall_configured': base_domain_check['configured'] or any(v['configured'] for v in results.values())
+        }
+    except Exception as e:
+        return {'error': str(e)}
+
+async def enhanced_test_smtp(domain, mx_records):
+    results = []
+    for record in mx_records:
+        try:
+            host = record.split(' ')[-1].rstrip('.')
+            for port in [25, 587]:
+                try:
+                    with smtplib.SMTP(host, port, timeout=10) as smtp:
+                        smtp.helo('example.com')
+                        code, message = smtp.noop()
+                        results.append({
+                            'host': host,
+                            'port': port,
+                            'success': True,
+                            'response': f"{code} {message.decode()}"
+                        })
+                        break
+                except Exception as e:
+                    if port == 587:
+                        results.append({
+                            'host': host,
+                            'port': '25/587',
+                            'success': False,
+                            'error': str(e)
+                        })
+        except Exception as e:
+            results.append({
+                'host': record,
+                'success': False,
+                'error': str(e)
+            })
+    return results
+
 @app.route('/api/check-domain', methods=['POST'])
 def check_domain():
     data = request.get_json()
@@ -86,11 +151,12 @@ def check_domain():
         'spf': check_spf(domain),
         'dkim': check_dkim(domain),
         'dmarc': check_dmarc(domain),
-        'mx': check_mx(domain)
+        'mx': check_mx(domain),
+        'email_relay': check_email_relay(domain)
     }
     
     if results['mx']['exists']:
-        results['smtp'] = asyncio.run(test_smtp(domain, results['mx']['records']))
+        results['smtp'] = asyncio.run(enhanced_test_smtp(domain, results['mx']['records']))
     
     common_subdomains = ['mail', 'smtp', 'email', 'mx']
     results['subdomains'] = {}
@@ -99,7 +165,11 @@ def check_domain():
         subdomain = f'{sub}.{domain}'
         results['subdomains'][subdomain] = {
             'mx': check_mx(subdomain),
-            'spf': check_spf(subdomain)
+            'spf': check_spf(subdomain),
+            'dkim': check_dkim(domain),
+            'dmarc': check_dmarc(domain),
+            'mx': check_mx(domain),
+            'email_relay': check_email_relay(domain)
         }
     
     return jsonify(results)
