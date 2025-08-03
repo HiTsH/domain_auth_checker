@@ -7,16 +7,16 @@ import {
   Paper,
   Grid,
   CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
   Box,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorIcon from "@material-ui/icons/Error";
+import {
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+} from "@material-ui/icons";
+import RecordSection from "./components/RecordSection";
+import EmailRelayResults from "./components/EmailRelayResults";
+import { recordConfigs } from "./config/recordConfigs";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,125 +69,6 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
   },
 }));
-
-const EmailRelayResults = ({ emailRelay, classes }) => {
-  if (!emailRelay) return null;
-
-  return (
-    <Paper className={classes.resultCard}>
-      {emailRelay.error ? (
-        <Typography>Error checking email relay: {emailRelay.error}</Typography>
-      ) : (
-        <>
-          <Typography variant="h6" className={classes.sectionTitle}>
-            Email Relay Configuration
-          </Typography>
-          <Box className={classes.statusText}>
-            <Typography variant="body1">
-              <strong>Overall Status:</strong>
-              <span
-                style={{
-                  color: emailRelay.overall_configured ? "#4caf50" : "#f44336",
-                  marginLeft: 8,
-                }}
-              >
-                {emailRelay.overall_configured
-                  ? "Configured"
-                  : "Not Configured"}
-              </span>
-            </Typography>
-          </Box>
-
-          <Typography variant="subtitle1" className={classes.sectionTitle}>
-            Base Domain:
-          </Typography>
-          <Box className={classes.statusText}>
-            <Typography variant="body1">
-              <strong>Status:</strong>
-              <span
-                style={{
-                  color: emailRelay.base_domain.configured
-                    ? "#4caf50"
-                    : "#f44336",
-                  marginLeft: 8,
-                }}
-              >
-                {emailRelay.base_domain.configured
-                  ? "Configured"
-                  : "Not Configured"}
-              </span>
-            </Typography>
-          </Box>
-
-          {emailRelay.base_domain.mx_exists && (
-            <Typography variant="body2">✓ MX Records exist</Typography>
-          )}
-          {emailRelay.base_domain.a_exists && (
-            <Typography variant="body2">✓ A Records exist</Typography>
-          )}
-
-          <Typography variant="subtitle1" className={classes.sectionTitle}>
-            Subdomains:
-          </Typography>
-          {Object.entries(emailRelay.subdomains).map(([subdomain, data]) => (
-            <Accordion key={subdomain}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>
-                  {subdomain}:
-                  <span
-                    style={{
-                      color: data.configured ? "#4caf50" : "#f44336",
-                      marginLeft: 8,
-                    }}
-                  >
-                    {data.configured ? "Configured" : "Not Configured"}
-                  </span>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails className={classes.accordionDetails}>
-                {data.mx_exists && (
-                  <>
-                    <Typography variant="body2">MX Records:</Typography>
-                    <Box>
-                      {data.mx_records.map((record, i) => (
-                        <Chip
-                          key={i}
-                          label={record}
-                          variant="outlined"
-                          className={classes.chip}
-                        />
-                      ))}
-                    </Box>
-                  </>
-                )}
-                {data.a_exists && (
-                  <>
-                    <Typography variant="body2">A Records:</Typography>
-                    <Box>
-                      {data.a_records.map((record, i) => (
-                        <Chip
-                          key={i}
-                          label={record}
-                          variant="outlined"
-                          className={classes.chip}
-                        />
-                      ))}
-                    </Box>
-                  </>
-                )}
-                {!data.mx_exists && !data.a_exists && (
-                  <Typography variant="body2">
-                    No email relay records found
-                  </Typography>
-                )}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </>
-      )}
-    </Paper>
-  );
-};
 
 export default function App() {
   const classes = useStyles();
@@ -262,109 +143,20 @@ export default function App() {
               </Typography>
 
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Box className={classes.statusText}>
-                    {results.spf.exists ? (
-                      <CheckCircleIcon className={classes.success} />
-                    ) : (
-                      <ErrorIcon className={classes.error} />
-                    )}
-                    <Typography variant="body1">
-                      <strong>SPF</strong>
-                    </Typography>
-                  </Box>
-                  <Box>
-                    {results.spf.records?.map((r, i) => (
-                      <Chip
-                        key={i}
-                        label={r}
-                        variant="outlined"
-                        className={classes.chip}
-                      />
-                    ))}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Box className={classes.statusText}>
-                    {Object.keys(results.dkim).length > 0 ? (
-                      <CheckCircleIcon className={classes.success} />
-                    ) : (
-                      <ErrorIcon className={classes.error} />
-                    )}
-                    <Typography variant="body1">
-                      <strong>DKIM</strong>
-                    </Typography>
-                  </Box>
-                  <Box>
-                    {Object.entries(results.dkim).map(([selector, data]) => (
-                      <Accordion key={selector}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography>{selector}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails className={classes.accordionDetails}>
-                          <Typography variant="body2">{data.domain}</Typography>
-                          <Box>
-                            {data.records.map((record, i) => (
-                              <Chip
-                                key={i}
-                                label={record}
-                                variant="outlined"
-                                className={classes.chip}
-                              />
-                            ))}
-                          </Box>
-                        </AccordionDetails>
-                      </Accordion>
-                    ))}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Box className={classes.statusText}>
-                    {results.dmarc.exists ? (
-                      <CheckCircleIcon className={classes.success} />
-                    ) : (
-                      <ErrorIcon className={classes.error} />
-                    )}
-                    <Typography variant="body1">
-                      <strong>DMARC</strong>
-                    </Typography>
-                  </Box>
-                  <Box>
-                    {results.dmarc.records?.map((r, i) => (
-                      <Chip
-                        key={i}
-                        label={r}
-                        variant="outlined"
-                        className={classes.chip}
-                      />
-                    ))}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Box className={classes.statusText}>
-                    {results.mx.exists ? (
-                      <CheckCircleIcon className={classes.success} />
-                    ) : (
-                      <ErrorIcon className={classes.error} />
-                    )}
-                    <Typography variant="body1">
-                      <strong>MX Records</strong>
-                    </Typography>
-                  </Box>
-                  <Box>
-                    {results.mx.records?.map((r, i) => (
-                      <Chip
-                        key={i}
-                        label={r}
-                        variant="outlined"
-                        className={classes.chip}
-                      />
-                    ))}
-                  </Box>
-                </Grid>
+                {recordConfigs.map((config) => (
+                  <Grid item key={config.key} {...config.gridSize}>
+                    <RecordSection
+                      exists={config.exists(results)}
+                      records={config.records(results)}
+                      title={config.title}
+                      classes={classes}
+                      isAccordion={config.isAccordion}
+                      accordionData={
+                        config.isAccordion ? config.records(results) : null
+                      }
+                    />
+                  </Grid>
+                ))}
               </Grid>
             </Paper>
 
