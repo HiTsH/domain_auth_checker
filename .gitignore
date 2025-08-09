@@ -209,3 +209,4 @@ __marimo__/
 *.pyc
 __pycache__
 node_modules
+render.yaml
