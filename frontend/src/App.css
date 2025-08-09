@@ -1,6 +1,15 @@
-/* Add to frontend/src/App.css */
+/* Base Styles */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
 .App {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -10,69 +19,138 @@ header {
   margin-bottom: 2rem;
 }
 
+header h1 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+/* Input Form */
 .input-group {
   display: flex;
-  margin-bottom: 1rem;
+  max-width: 600px;
+  margin: 0 auto 2rem;
 }
 
 input {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
   font-size: 1rem;
 }
 
 button {
-  padding: 0.5rem 1rem;
-  background: #007bff;
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
   color: white;
   border: none;
+  border-radius: 0 4px 4px 0;
   cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
 }
 
-.error {
-  color: #dc3545;
-  margin: 1rem 0;
+button:hover {
+  background-color: #2980b9;
 }
 
+button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Results */
 .results {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-top: 2rem;
 }
 
-.record-sections {
+.domain {
+  color: #3498db;
+  font-weight: bold;
+}
+
+/* DNS Results */
+.record-grid {
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
 }
 
-.record-section {
-  padding: 1rem;
-  border-radius: 4px;
+.record-card {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 1.5rem;
 }
 
-.record-section.valid {
-  background: #e6ffed;
-  border-left: 4px solid #28a745;
+.record-card.valid {
+  border-left: 4px solid #2ecc71;
 }
 
-.record-section.invalid {
-  background: #fff5f5;
-  border-left: 4px solid #dc3545;
+.record-card.invalid {
+  border-left: 4px solid #e74c3c;
 }
 
 .record-details {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 .record-value code {
   display: block;
   background: #f8f9fa;
-  padding: 0.5rem;
+  padding: 0.75rem;
   margin-top: 0.5rem;
+  border-radius: 4px;
   overflow-x: auto;
+  font-family: "Courier New", Courier, monospace;
 }
 
+/* Email Relay Results */
+.relay-results {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.relay-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.test-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Summary */
 .summary {
   margin-top: 2rem;
-  padding: 1rem;
+  padding: 1.5rem;
   background: #e7f5ff;
+  border-radius: 8px;
+}
+
+/* Error */
+.error {
+  color: #e74c3c;
+  background: #fadbd8;
+  padding: 1rem;
   border-radius: 4px;
+  margin: 1rem auto;
+  max-width: 600px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .relay-grid {
+    grid-template-columns: 1fr;
+  }
 }
