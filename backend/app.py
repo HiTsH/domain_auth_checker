@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from dns_utils import check_domain_records
+from backend.dns_utils import check_domain_records
 
 app = Flask(__name__)
 
